@@ -14,7 +14,9 @@
    <string>MultiMC 5</string>
   </property>
   <property name="windowIcon">
-   <iconset theme="multimc"/>
+   <iconset theme="multimc">
+    <normaloff/>
+   </iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
@@ -61,6 +63,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionAddInstance"/>
+   <addaction name="actionTechnicInstance"/>
    <addaction name="actionCopyInstance"/>
    <addaction name="separator"/>
    <addaction name="actionViewInstanceFolder"/>
@@ -493,6 +496,14 @@
    </property>
    <property name="toolTip">
     <string>Change the settings specific to the instance</string>
+   </property>
+  </action>
+  <action name="actionTechnicInstance">
+   <property name="icon">
+    <iconset theme="technic"/>
+   </property>
+   <property name="text">
+    <string>Create Technic Instance</string>
    </property>
   </action>
  </widget>

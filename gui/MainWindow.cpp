@@ -36,6 +36,7 @@
 #include <QWidgetAction>
 #include <QProgressDialog>
 #include <QShortcut>
+#include <QQmlError>
 
 #include "osutils.h"
 #include "userutils.h"
@@ -61,6 +62,7 @@
 #include "gui/dialogs/UpdateDialog.h"
 #include "gui/dialogs/EditAccountDialog.h"
 #include "gui/dialogs/NotificationDialog.h"
+#include "gui/dialogs/TechnicDialog.h"
 
 #include "gui/pages/global/MultiMCPage.h"
 #include "gui/pages/global/ExternalToolsPage.h"
@@ -729,6 +731,32 @@ void MainWindow::setCatBackground(bool enabled)
 	{
 		view->setStyleSheet(QString());
 	}
+}
+
+void MainWindow::on_actionTechnicInstance_triggered()
+{
+	auto technicInstDlg = new TechnicDialog(this);
+	if(technicInstDlg->exec() == QDialog::Rejected)
+	{
+		QLOG_DEBUG() << "Pack selection aborted...";
+		return;
+	}
+	auto pack = technicInstDlg->getPack();
+	auto version = technicInstDlg->getPackVersion();
+	auto instanceName = technicInstDlg->getInstanceName();
+	if(!pack)
+	{
+		QLOG_DEBUG() << "No pack selected...";
+		return;
+	}
+	if(pack->name == "vanilla")
+	{
+		on_actionAddInstance_triggered();
+		return;
+	}
+	QLOG_DEBUG() << "Would install pack" << pack->name << "version" << version;
+	QLOG_DEBUG() << "Into instance" << instanceName;
+	QLOG_DEBUG() << "From" << pack->repo + pack->name;
 }
 
 void MainWindow::on_actionAddInstance_triggered()

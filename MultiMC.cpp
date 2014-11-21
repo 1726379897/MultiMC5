@@ -553,6 +553,7 @@ void MultiMC::initHttpMetaCache()
 	m_metacache->addBase("liteloader", QDir("mods/liteloader").absolutePath());
 	m_metacache->addBase("skins", QDir("accounts/skins").absolutePath());
 	m_metacache->addBase("root", QDir(root()).absolutePath());
+	m_metacache->addBase("cache", QDir("cache").absolutePath());
 	m_metacache->addBase("translations", QDir(staticData() + "/translations").absolutePath());
 	m_metacache->Load();
 }

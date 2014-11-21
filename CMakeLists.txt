@@ -47,6 +47,8 @@ find_package(Qt5Concurrent REQUIRED)
 find_package(Qt5Network REQUIRED)
 find_package(Qt5Test REQUIRED)
 find_package(Qt5Xml REQUIRED)
+find_package(Qt5Qml REQUIRED)
+find_package(Qt5Quick REQUIRED)
 find_package(Qt5LinguistTools REQUIRED)
 find_package(Qt5WebKitWidgets REQUIRED)
 
@@ -57,6 +59,8 @@ include_directories(
 	${Qt5Test_INCLUDE_DIRS}
 	${Qt5Network_INCLUDE_DIRS}
 	${Qt5Xml_INCLUDE_DIRS}
+	${Qt5Qml_INCLUDE_DIRS}
+	${Qt5Quick_INCLUDE_DIRS}
 )
 
 # The Qt5 cmake files don't provide its install paths, so ask qmake.
@@ -336,6 +340,8 @@ SET(MULTIMC_SOURCES
 	gui/pagedialog/PageDialog.h
 	gui/dialogs/ProgressDialog.cpp
 	gui/dialogs/ProgressDialog.h
+	gui/dialogs/QMLDialog.cpp
+	gui/dialogs/QMLDialog.h
 	gui/dialogs/UpdateDialog.cpp
 	gui/dialogs/UpdateDialog.h
 	gui/dialogs/VersionSelectDialog.cpp
@@ -617,6 +623,15 @@ SET(MULTIMC_SOURCES
 	# Translations
 	logic/trans/TranslationDownloader.h
 	logic/trans/TranslationDownloader.cpp
+
+	# All things Technic
+	logic/technic/ImageProvider.cpp
+	logic/technic/ImageProvider.h
+	logic/technic/LegacyPackInfo.h
+	logic/technic/PackModel.cpp
+	logic/technic/PackModel.h
+	gui/dialogs/TechnicDialog.cpp
+	gui/dialogs/TechnicDialog.h
 )
 
 
@@ -684,6 +699,7 @@ set(MULTIMC_QRCS
 	resources/iOS/iOS.qrc
 	resources/instances/instances.qrc
 	resources/versions/versions.qrc
+	resources/qml/qml.qrc
 )
 
 
@@ -726,8 +742,8 @@ add_executable(MultiMC MACOSX_BUNDLE WIN32 main.cpp ${MULTIMC_RCS})
 # Link
 target_link_libraries(MultiMC MultiMC_common)
 target_link_libraries(MultiMC_common xz-embedded unpack200 quazip libUtil LogicalGui ${MultiMC_LINK_ADDITIONAL_LIBS})
-qt5_use_modules(MultiMC Core Widgets Network Xml Concurrent WebKitWidgets ${MultiMC_QT_ADDITIONAL_MODULES})
-qt5_use_modules(MultiMC_common Core Widgets Network Xml Concurrent WebKitWidgets ${MultiMC_QT_ADDITIONAL_MODULES})
+qt5_use_modules(MultiMC Core Widgets Network Xml Concurrent WebKitWidgets Qml Quick ${MultiMC_QT_ADDITIONAL_MODULES})
+qt5_use_modules(MultiMC_common Core Widgets Network Xml Concurrent WebKitWidgets Qml Quick ${MultiMC_QT_ADDITIONAL_MODULES})
 
 ################################ INSTALLATION AND PACKAGING ################################
 
