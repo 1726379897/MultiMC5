@@ -268,9 +268,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 	// Shouldn't have to use lambdas here like this, but if I don't, the compiler throws a fit.
 	// Template hell sucks...
 	connect(MMC->accounts().get(), &MojangAccountList::activeAccountChanged, [this]
-	{ activeAccountChanged(); });
+			{
+		activeAccountChanged();
+	});
 	connect(MMC->accounts().get(), &MojangAccountList::listChanged, [this]
-	{ repopulateAccountsMenu(); });
+			{
+		repopulateAccountsMenu();
+	});
 
 	// Show initial account
 	activeAccountChanged();
@@ -418,7 +422,9 @@ void MainWindow::updateToolsMenu()
 	QMenu *launchMenu = new QMenu(this);
 	QAction *normalLaunch = launchMenu->addAction(tr("Launch"));
 	connect(normalLaunch, &QAction::triggered, [this]()
-	{ doLaunch(); });
+			{
+		doLaunch();
+	});
 	launchMenu->addSeparator()->setText(tr("Profilers"));
 	for (auto profiler : MMC->profilers().values())
 	{
@@ -433,7 +439,9 @@ void MainWindow::updateToolsMenu()
 		else
 		{
 			connect(profilerAction, &QAction::triggered, [this, profiler]()
-			{ doLaunch(true, profiler.get()); });
+					{
+				doLaunch(true, profiler.get());
+			});
 		}
 	}
 	launchMenu->addSeparator()->setText(tr("Tools"));
@@ -450,7 +458,9 @@ void MainWindow::updateToolsMenu()
 		else
 		{
 			connect(toolAction, &QAction::triggered, [this, tool]()
-			{ tool->createDetachedTool(m_selectedInstance, this)->run(); });
+					{
+				tool->createDetachedTool(m_selectedInstance, this)->run();
+			});
 		}
 	}
 	ui->actionLaunchInstance->setMenu(launchMenu);
@@ -736,30 +746,29 @@ void MainWindow::setCatBackground(bool enabled)
 void MainWindow::on_actionTechnicInstance_triggered()
 {
 	auto technicInstDlg = new TechnicDialog(this);
-	if(technicInstDlg->exec() == QDialog::Rejected)
+	if (technicInstDlg->exec() == QDialog::Rejected)
 	{
 		QLOG_DEBUG() << "Pack selection aborted...";
 		return;
 	}
 	auto pack = technicInstDlg->getPack();
-	auto version = technicInstDlg->getPackVersion();
+	auto version = technicInstDlg->getVersion();
 	auto instanceName = technicInstDlg->getInstanceName();
-	if(!pack)
+	if (!pack)
 	{
 		QLOG_DEBUG() << "No pack selected...";
 		return;
 	}
-	if(pack->name == "vanilla")
-	{
-		on_actionAddInstance_triggered();
-		return;
-	}
-	QLOG_DEBUG() << "Would install pack" << pack->name << "version" << version;
+	QLOG_DEBUG() << "Would install pack" << version->pack_name << "version" << version->id;
 	QLOG_DEBUG() << "Into instance" << instanceName;
-	QLOG_DEBUG() << "From" << pack->repo + pack->name;
+	QString packUrl = version->base_url + version->pack_name + "/" + version->id;
+	QLOG_DEBUG() << "From" << packUrl;
+
+	// createInstance(pack->display_name, "Technic", pack->name, );
 }
 
-void MainWindow::on_actionAddInstance_triggered()
+// FIXME: eliminate
+void MainWindow::waitForMinecraftVersions()
 {
 	if (!MMC->minecraftlist()->isLoaded() && m_versionLoadTask &&
 		m_versionLoadTask->isRunning())
@@ -769,30 +778,28 @@ void MainWindow::on_actionAddInstance_triggered()
 		waitLoop.connect(m_versionLoadTask, SIGNAL(succeeded()), SLOT(quit()));
 		waitLoop.exec();
 	}
+}
 
-	NewInstanceDialog newInstDlg(this);
-	if (!newInstDlg.exec())
-		return;
-
-	MMC->settings()->set("LastUsedGroupForNewInstance", newInstDlg.instGroup());
-
+void MainWindow::createInstance(QString instName, QString instGroup, QString instIcon,
+								BaseVersionPtr version)
+{
 	InstancePtr newInstance;
 
 	QString instancesDir = MMC->settings()->get("InstanceDir").toString();
-	QString instDirName = DirNameFromString(newInstDlg.instName(), instancesDir);
+	QString instDirName = DirNameFromString(instName, instancesDir);
 	QString instDir = PathCombine(instancesDir, instDirName);
 
 	auto &loader = InstanceFactory::get();
 
-	auto error = loader.createInstance(newInstance, newInstDlg.selectedVersion(), instDir);
+	auto error = loader.createInstance(newInstance, version, instDir);
 	QString errorMsg = tr("Failed to create instance %1: ").arg(instDirName);
 	switch (error)
 	{
 	case InstanceFactory::NoCreateError:
 	{
-		newInstance->setName(newInstDlg.instName());
-		newInstance->setIconKey(newInstDlg.iconKey());
-		newInstance->setGroupInitial(newInstDlg.instGroup());
+		newInstance->setName(instName);
+		newInstance->setIconKey(instIcon);
+		newInstance->setGroupInitial(instGroup);
 		MMC->instances()->add(InstancePtr(newInstance));
 		stringToIntList(MMC->settings()->get("ShownNotifications").toString());
 		break;
@@ -825,7 +832,7 @@ void MainWindow::on_actionAddInstance_triggered()
 		ProgressDialog loadDialog(this);
 		auto update = newInstance->doUpdate();
 		connect(update.get(), &Task::failed, [this](QString reason)
-		{
+				{
 			QString error = QString("Instance load failed: %1").arg(reason);
 			CustomMessageBox::selectable(this, tr("Error"), error, QMessageBox::Warning)
 				->show();
@@ -840,6 +847,17 @@ void MainWindow::on_actionAddInstance_triggered()
 			   "one account added.\nPlease add your Mojang or Minecraft account."),
 			QMessageBox::Warning)->show();
 	}
+}
+
+void MainWindow::on_actionAddInstance_triggered()
+{
+	waitForMinecraftVersions();
+
+	NewInstanceDialog newInstDlg(this);
+	if (!newInstDlg.exec())
+		return;
+
+	MMC->settings()->set("LastUsedGroupForNewInstance", newInstDlg.instGroup());
 }
 
 void MainWindow::on_actionCopyInstance_triggered()
@@ -930,7 +948,8 @@ void MainWindow::setSelectedInstanceById(const QString &id)
 	if (index.isValid())
 	{
 		QModelIndex selectionIndex = proxymodel->mapFromSource(index);
-		view->selectionModel()->setCurrentIndex(selectionIndex, QItemSelectionModel::ClearAndSelect);
+		view->selectionModel()->setCurrentIndex(selectionIndex,
+												QItemSelectionModel::ClearAndSelect);
 	}
 }
 
@@ -985,10 +1004,10 @@ void MainWindow::on_actionCheckUpdate_triggered()
 }
 
 template <typename T>
-void ShowPageDialog(T raw_provider, QWidget * parent, QString open_page = QString())
+void ShowPageDialog(T raw_provider, QWidget *parent, QString open_page = QString())
 {
 	auto provider = std::dynamic_pointer_cast<BasePageProvider>(raw_provider);
-	if(!provider)
+	if (!provider)
 		return;
 	PageDialog dlg(provider, open_page, parent);
 	dlg.exec();
@@ -1022,7 +1041,6 @@ void MainWindow::on_actionScreenshots_triggered()
 {
 	ShowPageDialog(m_selectedInstance, this, "screenshots");
 }
-
 
 void MainWindow::on_actionManageAccounts_triggered()
 {
@@ -1070,10 +1088,11 @@ void MainWindow::on_actionDeleteInstance_triggered()
 {
 	if (m_selectedInstance)
 	{
-		auto response = CustomMessageBox::selectable(
-			this, tr("CAREFUL"), tr("This is permanent! Are you sure?\nAbout to delete: ") +
-									 m_selectedInstance->name(),
-			QMessageBox::Question, QMessageBox::Yes | QMessageBox::No)->exec();
+		auto response =
+			CustomMessageBox::selectable(
+				this, tr("CAREFUL"), tr("This is permanent! Are you sure?\nAbout to delete: ") +
+										 m_selectedInstance->name(),
+				QMessageBox::Question, QMessageBox::Yes | QMessageBox::No)->exec();
 		if (response == QMessageBox::Yes)
 		{
 			m_selectedInstance->nuke();
@@ -1175,12 +1194,13 @@ void MainWindow::doLaunch(bool online, BaseProfilerFactory *profiler)
 	if (accounts->count() <= 0)
 	{
 		// Tell the user they need to log in at least one account in order to play.
-		auto reply = CustomMessageBox::selectable(
-			this, tr("No Accounts"),
-			tr("In order to play Minecraft, you must have at least one Mojang or Minecraft "
-			   "account logged in to MultiMC."
-			   "Would you like to open the account manager to add an account now?"),
-			QMessageBox::Information, QMessageBox::Yes | QMessageBox::No)->exec();
+		auto reply =
+			CustomMessageBox::selectable(
+				this, tr("No Accounts"),
+				tr("In order to play Minecraft, you must have at least one Mojang or Minecraft "
+				   "account logged in to MultiMC."
+				   "Would you like to open the account manager to add an account now?"),
+				QMessageBox::Information, QMessageBox::Yes | QMessageBox::No)->exec();
 
 		if (reply == QMessageBox::Yes)
 		{
@@ -1303,7 +1323,9 @@ void MainWindow::updateInstance(InstancePtr instance, AuthSessionPtr session,
 	}
 	ProgressDialog tDialog(this);
 	connect(updateTask.get(), &Task::succeeded, [this, instance, session, profiler]
-	{ launchInstance(instance, session, profiler); });
+			{
+		launchInstance(instance, session, profiler);
+	});
 	connect(updateTask.get(), SIGNAL(failed(QString)), SLOT(onGameUpdateError(QString)));
 	tDialog.exec(updateTask.get());
 }
@@ -1351,8 +1373,8 @@ void MainWindow::launchInstance(InstancePtr instance, AuthSessionPtr session,
 				&BaseProfiler::abortProfiling);
 		dialog.show();
 		connect(profilerInstance, &BaseProfiler::readyToLaunch,
-				[&dialog, this, proc](const QString & message)
-		{
+				[&dialog, this, proc](const QString &message)
+				{
 			dialog.accept();
 			QMessageBox msg;
 			msg.setText(tr("The launch of Minecraft itself is delayed until you press the "
@@ -1365,8 +1387,8 @@ void MainWindow::launchInstance(InstancePtr instance, AuthSessionPtr session,
 			proc->launch();
 		});
 		connect(profilerInstance, &BaseProfiler::abortLaunch,
-				[&dialog, this, proc](const QString & message)
-		{
+				[&dialog, this, proc](const QString &message)
+				{
 			dialog.accept();
 			QMessageBox msg;
 			msg.setText(tr("Couldn't start the profiler: %1").arg(message));
@@ -1421,7 +1443,7 @@ void MainWindow::openWebPage(QUrl url)
 
 void MainWindow::instanceChanged(const QModelIndex &current, const QModelIndex &previous)
 {
-	if(!current.isValid())
+	if (!current.isValid())
 	{
 		MMC->settings()->set("SelectedInstance", QString());
 		selectionBad();
@@ -1429,7 +1451,7 @@ void MainWindow::instanceChanged(const QModelIndex &current, const QModelIndex &
 	}
 	QString id = current.data(InstanceList::InstanceIDRole).toString();
 	m_selectedInstance = MMC->instances()->getInstanceById(id);
-	if ( m_selectedInstance )
+	if (m_selectedInstance)
 	{
 		ui->instanceToolBar->setEnabled(m_selectedInstance->canLaunch());
 		renameButton->setText(m_selectedInstance->name());
@@ -1513,17 +1535,17 @@ void MainWindow::checkSetDefaultJava()
 			askForJava = true;
 			break;
 		}
-		if(!currentJavaPath.contains('/'))
+		if (!currentJavaPath.contains('/'))
 		{
 			currentJavaPath = QStandardPaths::findExecutable(currentJavaPath);
 		}
 		QFile currentJavaBin(currentJavaPath);
-		if(!currentJavaBin.exists())
+		if (!currentJavaBin.exists())
 		{
 			askForJava = true;
 			break;
 		}
-		#if defined Q_OS_WIN32
+#if defined Q_OS_WIN32
 		QString currentHack = MMC->settings()->get("JavaDetectionHack").toString();
 		if (currentHack != javaHack)
 		{
@@ -1537,7 +1559,7 @@ void MainWindow::checkSetDefaultJava()
 			askForJava = true;
 			break;
 		}
-		#endif
+#endif
 	} while (0);
 
 	if (askForJava)

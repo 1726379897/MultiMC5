@@ -11,8 +11,8 @@ public:
 public:
 	Q_INVOKABLE void setCurrent(int i);
 	SolderPackInfoPtr getPack();
-	QString getPackVersion();
 	QString getInstanceName();
+	SolderVersionPtr getVersion();
 
 private:
 	int m_currentPack = -1;

@@ -42,10 +42,10 @@ SolderPackInfoPtr TechnicDialog::getPack()
 	return m_model->packByIndex(index);
 }
 
-QString TechnicDialog::getPackVersion()
+SolderVersionPtr TechnicDialog::getVersion()
 {
-	auto version = getPropertyValue("currentVersion", QString("invalid")).toString();
-	return version;
+	auto versionId = getPropertyValue("currentVersion", QString("invalid")).toString();
+	return m_versionModel->versionById(versionId);
 }
 
 QString TechnicDialog::getInstanceName()

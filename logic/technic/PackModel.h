@@ -1,6 +1,7 @@
 #pragma once
 #include <QAbstractListModel>
 #include <memory>
+#include "SolderVersion.h"
 
 class ByteArrayDownload;
 
@@ -13,9 +14,9 @@ struct SolderPackInfo
 	QString icon;
 	QString logo;
 	QString background;
-	int recommended;
-	int latest;
-	QStringList builds;
+	int recommended = -1;
+	int latest = -1;
+	QList<SolderVersionPtr> builds;
 };
 typedef std::shared_ptr<SolderPackInfo> SolderPackInfoPtr;
 
@@ -51,6 +52,7 @@ public:
 		m_base = base;
 		endResetModel();
 	}
+	SolderVersionPtr versionById(QString id);
 
 public: /* model interface */
 	virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;

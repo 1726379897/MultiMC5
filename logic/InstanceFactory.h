@@ -59,7 +59,8 @@ public:
 	enum InstType
 	{
 		NormalInst,
-		FTBInstance
+		FTBInstance,
+		SolderInst
 	};
 
 	/*!

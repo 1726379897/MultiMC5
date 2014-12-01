@@ -630,6 +630,10 @@ SET(MULTIMC_SOURCES
 	logic/technic/LegacyPackInfo.h
 	logic/technic/PackModel.cpp
 	logic/technic/PackModel.h
+	logic/technic/SolderVersion.cpp
+	logic/technic/SolderVersion.h
+	logic/SolderInstance.cpp
+	logic/SolderInstance.h
 	gui/dialogs/TechnicDialog.cpp
 	gui/dialogs/TechnicDialog.h
 )
