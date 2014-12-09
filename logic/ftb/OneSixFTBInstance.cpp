@@ -3,9 +3,9 @@
 #include "logic/minecraft/InstanceVersion.h"
 #include "logic/minecraft/OneSixLibrary.h"
 #include "logic/minecraft/VersionBuilder.h"
-#include "tasks/SequentialTask.h"
-#include "forge/ForgeInstaller.h"
-#include "forge/ForgeVersionList.h"
+#include "logic/tasks/SequentialTask.h"
+#include "logic/forge/ForgeInstaller.h"
+#include "logic/forge/ForgeVersionList.h"
 #include "MultiMC.h"
 #include "pathutils.h"
 

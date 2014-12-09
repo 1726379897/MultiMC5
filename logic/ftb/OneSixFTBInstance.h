@@ -1,6 +1,6 @@
 #pragma once
 
-#include "OneSixInstance.h"
+#include "logic/OneSixInstance.h"
 
 class OneSixLibrary;
 

@@ -764,10 +764,10 @@ void MainWindow::on_actionTechnicInstance_triggered()
 	QString packUrl = version->base_url + version->pack_name + "/" + version->id;
 	QLOG_DEBUG() << "From" << packUrl;
 
-	// createInstance(pack->display_name, "Technic", pack->name, );
+	createInstance(pack->display_name, "Technic", pack->name, version);
 }
 
-// FIXME: eliminate
+// FIXME: eliminate, should not be needed
 void MainWindow::waitForMinecraftVersions()
 {
 	if (!MMC->minecraftlist()->isLoaded() && m_versionLoadTask &&
@@ -858,6 +858,8 @@ void MainWindow::on_actionAddInstance_triggered()
 		return;
 
 	MMC->settings()->set("LastUsedGroupForNewInstance", newInstDlg.instGroup());
+	createInstance(newInstDlg.instName(), newInstDlg.instGroup(), newInstDlg.iconKey(),
+				   newInstDlg.selectedVersion());
 }
 
 void MainWindow::on_actionCopyInstance_triggered()

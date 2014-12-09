@@ -1,6 +1,7 @@
 #pragma once
 
 #include "logic/OneSixInstance.h"
+#include "SolderVersion.h"
 class Task;
 
 class SolderInstance : public OneSixInstance
@@ -11,8 +12,10 @@ public:
 							QObject *parent = 0);
     virtual ~SolderInstance(){};
 
-	void setPackUrl(QString url);
-	QString getPackUrl();
+	void setSolderVersion(SolderVersionPtr url);
+	SolderVersionPtr solderVersion();
 
 	virtual std::shared_ptr<Task> doUpdate() override;
+private:
+	SolderVersionPtr m_solderVersion;
 };

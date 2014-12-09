@@ -532,10 +532,10 @@ SET(MULTIMC_SOURCES
 	logic/LwjglVersionList.cpp
 
 	# FTB
-	logic/OneSixFTBInstance.h
-	logic/OneSixFTBInstance.cpp
-	logic/LegacyFTBInstance.h
-	logic/LegacyFTBInstance.cpp
+	logic/ftb/OneSixFTBInstance.h
+	logic/ftb/OneSixFTBInstance.cpp
+	logic/ftb/LegacyFTBInstance.h
+	logic/ftb/LegacyFTBInstance.cpp
 
 	# the screenshots feature
 	logic/screenshots/Screenshot.h
@@ -632,8 +632,8 @@ SET(MULTIMC_SOURCES
 	logic/technic/PackModel.h
 	logic/technic/SolderVersion.cpp
 	logic/technic/SolderVersion.h
-	logic/SolderInstance.cpp
-	logic/SolderInstance.h
+	logic/technic/SolderInstance.cpp
+	logic/technic/SolderInstance.h
 	gui/dialogs/TechnicDialog.cpp
 	gui/dialogs/TechnicDialog.h
 )

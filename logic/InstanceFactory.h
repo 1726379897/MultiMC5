@@ -56,13 +56,6 @@ public:
 		CantCreateDir
 	};
 
-	enum InstType
-	{
-		NormalInst,
-		FTBInstance,
-		SolderInst
-	};
-
 	/*!
 	 * \brief Creates a stub instance
 	 *
@@ -75,7 +68,7 @@ public:
 	 * - CantCreateDir if the given instance directory cannot be created.
 	 */
 	InstCreateError createInstance(InstancePtr &inst, BaseVersionPtr version,
-								   const QString &instDir, const InstType type = NormalInst);
+								   const QString &instDir);
 
 	/*!
 	 * \brief Creates a copy of an existing instance with a new name

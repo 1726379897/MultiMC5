@@ -27,13 +27,15 @@
 
 #include "logic/BaseInstance.h"
 #include "logic/LegacyInstance.h"
-#include "logic/LegacyFTBInstance.h"
 #include "logic/OneSixInstance.h"
-#include "logic/OneSixFTBInstance.h"
 #include "logic/OneSixInstance.h"
 #include "logic/BaseVersion.h"
 #include "logic/minecraft/MinecraftVersion.h"
-#include "logic/SolderInstance.h"
+#include "logic/ftb/LegacyFTBInstance.h"
+#include "logic/ftb/OneSixFTBInstance.h"
+#include "logic/ftb/FTBVersion.h"
+#include "logic/technic/SolderInstance.h"
+#include "logic/technic/SolderVersion.h"
 
 InstanceFactory InstanceFactory::loader;
 
@@ -55,7 +57,7 @@ InstanceFactory::InstLoadError InstanceFactory::loadInstance(InstancePtr &inst,
 	{
 		inst.reset(new SolderInstance(instDir, m_settings));
 	}
-	if (inst_type == "OneSix" || inst_type == "Nostalgia")
+	else if (inst_type == "OneSix" || inst_type == "Nostalgia")
 	{
 		inst.reset(new OneSixInstance(instDir, m_settings));
 	}
@@ -80,8 +82,7 @@ InstanceFactory::InstLoadError InstanceFactory::loadInstance(InstancePtr &inst,
 }
 
 InstanceFactory::InstCreateError
-InstanceFactory::createInstance(InstancePtr &inst, BaseVersionPtr version,
-								const QString &instDir, const InstanceFactory::InstType type)
+InstanceFactory::createInstance(InstancePtr &inst, BaseVersionPtr version, const QString &instDir)
 {
 	QDir rootDir(instDir);
 
@@ -101,9 +102,8 @@ InstanceFactory::createInstance(InstancePtr &inst, BaseVersionPtr version,
 	auto m_settings = new INISettingsObject(PathCombine(instDir, "instance.cfg"));
 	m_settings->registerSetting("InstanceType", "Legacy");
 
-	switch (type)
-	{
-	case NormalInst:
+	auto minecraftVersion = std::dynamic_pointer_cast<MinecraftVersion>(version);
+	if(minecraftVersion)
 	{
 		auto mcVer = std::dynamic_pointer_cast<MinecraftVersion>(version);
 		m_settings->set("InstanceType", "OneSix");
@@ -112,37 +112,38 @@ InstanceFactory::createInstance(InstancePtr &inst, BaseVersionPtr version,
 		inst->init();
 		return InstanceFactory::NoCreateError;
 	}
-	case FTBInstance:
+	auto ftbVersion = std::dynamic_pointer_cast<FTBVersion>(version);
+	if(ftbVersion)
 	{
-		auto mcVer = std::dynamic_pointer_cast<MinecraftVersion>(version);
-		if (mcVer->usesLegacyLauncher())
+		auto mcversion = ftbVersion->getMinecraftVersion();
+		if (mcversion->usesLegacyLauncher())
 		{
 			m_settings->set("InstanceType", "LegacyFTB");
 			inst.reset(new LegacyFTBInstance(instDir, m_settings));
-			inst->setIntendedVersionId(version->descriptor());
+			inst->setIntendedVersionId(mcversion->descriptor());
 		}
 		else
 		{
 			m_settings->set("InstanceType", "OneSixFTB");
 			inst.reset(new OneSixFTBInstance(instDir, m_settings));
-			inst->setIntendedVersionId(version->descriptor());
+			inst->setIntendedVersionId(mcversion->descriptor());
 		}
 		inst->init();
 		return InstanceFactory::NoCreateError;
 	}
-	case SolderInst:
+	SolderVersionPtr solderVersion = std::dynamic_pointer_cast<SolderVersion>(version);
+	if(solderVersion)
 	{
 		m_settings->set("InstanceType", "Solder");
-		inst.reset(new SolderInstance(instDir, m_settings));
-		inst->init();
+		auto solderPack = new SolderInstance(instDir, m_settings);
+
+		solderPack->setSolderVersion(solderVersion);
+		solderPack->init();
+		inst.reset(solderPack);
 		return InstanceFactory::NoCreateError;
 	}
-	default:
-	{
-		delete m_settings;
-		return InstanceFactory::NoSuchVersion;
-	}
-	}
+	delete m_settings;
+	return InstanceFactory::NoSuchVersion;
 }
 
 InstanceFactory::InstCreateError InstanceFactory::copyInstance(InstancePtr &newInstance,

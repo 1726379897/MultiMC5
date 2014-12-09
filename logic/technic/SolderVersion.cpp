@@ -75,3 +75,21 @@ QString SolderVersion::url()
 {
 	return base_url + pack_name + "/" + id;
 }
+
+SolderVersionPtr SolderVersion::fromJson(QJsonObject version)
+{
+	auto versionObj = std::make_shared<SolderVersion>();
+	versionObj->base_url = version.value("base_url").toString();
+	versionObj->pack_name = version.value("pack_name").toString();
+	versionObj->id = version.value("version").toString();
+	return versionObj;
+}
+
+QJsonObject SolderVersion::toJson()
+{
+	QJsonObject obj;
+	obj.insert("base_url", base_url);
+	obj.insert("pack_name", pack_name);
+	obj.insert("version", id);
+	return obj;
+}

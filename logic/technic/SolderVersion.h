@@ -1,5 +1,6 @@
 #pragma once
 #include <QString>
+#include <QJsonObject>
 #include <memory>
 #include "logic/BaseVersion.h"
 
@@ -13,6 +14,9 @@ struct SolderVersion : public BaseVersion
 	virtual QString typeString() const override;
 	virtual bool operator<(BaseVersion &a) override;
 	virtual bool operator>(BaseVersion &a) override;
+
+	static SolderVersionPtr fromJson(QJsonObject version);
+	QJsonObject toJson();
 
 	QString filename();
 	QString url();
